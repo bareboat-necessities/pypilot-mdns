@@ -114,11 +114,12 @@ public:
     }
 
     bool discover_signalk(MdnsServiceInfo& out, uint32_t timeout_ms = 3000) {
+        (void)timeout_ms;
         if (!started_) {
             mdns_copy(last_error_, sizeof(last_error_), "mDNS not started");
             return false;
         }
-        const int count = MDNS.queryService(PYPILOT_MDNS_SIGNALK_QUERY_SERVICE, PYPILOT_MDNS_SIGNALK_QUERY_PROTO, timeout_ms);
+        const int count = MDNS.queryService(PYPILOT_MDNS_SIGNALK_QUERY_SERVICE, PYPILOT_MDNS_SIGNALK_QUERY_PROTO);
         for (int i = 0; i < count; ++i) {
             String swname = MDNS.txt(i, "swname");
             if (swname != PYPILOT_MDNS_SIGNALK_SWNAME) continue;
@@ -126,7 +127,7 @@ public:
             mdns_copy(out.service, sizeof(out.service), PYPILOT_MDNS_SIGNALK_QUERY_SERVICE);
             mdns_copy(out.protocol, sizeof(out.protocol), PYPILOT_MDNS_SIGNALK_QUERY_PROTO);
             mdns_copy(out.host, sizeof(out.host), MDNS.hostname(i).c_str());
-            mdns_copy(out.address, sizeof(out.address), MDNS.IP(i).toString().c_str());
+            mdns_copy(out.address, sizeof(out.address), MDNS.address(i).toString().c_str());
             out.port = static_cast<uint16_t>(MDNS.port(i));
             out.txt.add("swname", swname.c_str());
             last_error_[0] = '\0';
