@@ -7,6 +7,7 @@
 #include <avahi-client/lookup.h>
 #include <avahi-common/address.h>
 #include <avahi-common/error.h>
+#include <avahi-common/malloc.h>
 #include <avahi-common/simple-watch.h>
 #include <avahi-common/strlst.h>
 #include <string.h>
@@ -103,6 +104,8 @@ bool PypilotMdns::advertise_pypilot(uint16_t port, const char* instance, const c
     }
     avahi_entry_group_reset(state_->group);
     const char* service_instance = instance && *instance ? instance : "pypilot";
+    char uid_txt[128]{};
+    snprintf(uid_txt, sizeof(uid_txt), "uid=%s", uid && *uid ? uid : "pypilot");
     int ret = avahi_entry_group_add_service(state_->group,
                                             AVAHI_IF_UNSPEC,
                                             AVAHI_PROTO_UNSPEC,
@@ -113,7 +116,7 @@ bool PypilotMdns::advertise_pypilot(uint16_t port, const char* instance, const c
                                             nullptr,
                                             port,
                                             "swname=pypilot",
-                                            uid && *uid ? "uid=pypilot" : "uid=pypilot",
+                                            uid_txt,
                                             nullptr);
     if (ret < 0) {
         snprintf(last_error_, sizeof(last_error_), "avahi_entry_group_add_service failed: %s", avahi_strerror(ret));
